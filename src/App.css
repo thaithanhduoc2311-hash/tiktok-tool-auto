@@ -165,6 +165,36 @@ body {
   height: 100vh;
 }
 
+.login-page {
+  flex-direction: column;
+}
+
+.login-page .header {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.login-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.login-message {
+  font-size: 22px;
+  font-weight: 600;
+  color: #111;
+}
+
+.login-hero-image {
+  width: min(260px, 45vw);
+  height: auto;
+  display: block;
+}
+
 /* Sidebar */
 .sidebar {
   width: 220px;
@@ -218,6 +248,7 @@ body {
 /* Header */
 .header {
   height: 70px;
+  width: 100%;
   background: white;
   border-bottom: 1px solid #e6e6e6;
   padding: 0 26px;
@@ -242,12 +273,14 @@ body {
 .content {
   display: flex;
   gap: 24px;
-  padding: 24px;
+  padding: 10px 24px;
   overflow-y: auto;
+  margin-bottom: 10px;
 }
 
 .left {
   flex: 2;
+  padding-bottom: 20px;
 }
 
 .right {
@@ -259,7 +292,7 @@ body {
   background: white;
   border-radius: 16px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .card h3 {
@@ -408,13 +441,14 @@ textarea {
 .bottom-actions {
   display: flex;
   gap: 12px;
-  margin-bottom: 30px;
+  margin-bottom: 0;
+  justify-content: center;
 }
 
 .bottom-actions button {
-  padding: 12px 20px;
+  padding: 8px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   background: #eaeaea;
 }
@@ -422,6 +456,18 @@ textarea {
 .bottom-actions .post {
   background: #fe2c55;
   color: white;
+}
+
+.bottom-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.post-status {
+  margin-top: 10px;
+  text-align: center;
+  color: #555;
+  font-size: 14px;
 }
 
 /* TikTok Page Layout */
@@ -1529,6 +1575,7 @@ textarea {
   width:100%;
   height:100%;
   object-fit:cover;
+  cursor:pointer;
 }
 
 .real-controls{
@@ -1541,6 +1588,17 @@ textarea {
   display:flex;
   align-items:center;
   gap:8px;
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(8px);
+  transition:opacity .18s ease, transform .18s ease;
+}
+
+.tiktok-phone:hover .real-controls,
+.tiktok-phone:focus-within .real-controls{
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
 }
 
 .real-controls button{
@@ -1631,4 +1689,178 @@ textarea {
 
 .replace-btn svg {
   flex-shrink: 0;
+}
+/* HEADER LEFT */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* LOGO */
+.header-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+/* TITLE */
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+}
+/* WRAPPER */
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+/* DROPDOWN */
+.avatar-dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  width: 180px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 8px 0;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+/* ITEM */
+.dropdown-item {
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+/* LOGOUT màu đỏ */
+.dropdown-item.logout {
+  color: #000;
+  font-weight: 500;
+}
+
+/* SHOW */
+.avatar-dropdown.show {
+  display: block;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.avatar-wrapper {
+  position: relative;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(320px, 42vw);
+  border: none;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-greeting {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  background: #fe2c55;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.avatar-dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  width: 200px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.dropdown-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  align-items: center;   /* canh giữa theo chiều dọc */
+  gap: 8px;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.logout {
+  color: red;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.avatar-dropdown .dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px;
+}
+.login-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #fe2c55;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
 }
