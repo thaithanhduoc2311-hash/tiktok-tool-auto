@@ -7,7 +7,6 @@ export default function App({ isLogin, setIsLogin, authUrl, onLogout, user, setU
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
-  const [postStatus, setPostStatus] = useState("");
   const [postPopup, setPostPopup] = useState(null);
   const locationRef = useRef(null);
   const carouselRef = useRef(null);
@@ -422,26 +421,22 @@ const handlePost = async () => {
 
   if (!accessToken) {
     const message = "Bạn cần đăng nhập Tiktok trước khi đăng video.";
-    setPostStatus(message);
     showPostPopup("error", "Chưa đăng nhập", message);
     return;
   }
 
   if (!selectedFile) {
     const message = "Vui lòng chọn video trước khi đăng.";
-    setPostStatus(message);
     showPostPopup("error", "Chưa chọn video", message);
     return;
   }
 
   try {
     setIsPosting(true);
-    setPostStatus("Đang tải video lên TikTok...");
-
     const formData = new FormData();
     formData.append("accessToken", accessToken);
     formData.append("title", caption.trim());
-    formData.append("privacyLevel", "SELF_ONLY");
+    formData.append("privacyLevel", getPrivacyLevel("minh"));
     formData.append("disableDuet", "false");
     formData.append("disableComment", "false");
     formData.append("disableStitch", "false");
@@ -461,12 +456,10 @@ const handlePost = async () => {
     }
 
     const message = `Đã gửi video để TikTok đăng thẳng lên profile ở chế độ riêng tư. Publish ID: ${data.publish_id}`;
-    setPostStatus(message);
     showPostPopup("success", "Đăng video thành công", message);
   } catch (err) {
     console.error("Upload TikTok error", err);
     const message = getUploadErrorMessage(err);
-    setPostStatus(`Đăng video thất bại: ${message}`);
     showPostPopup("error", "Đăng video thất bại", message);
   } finally {
     setIsPosting(false);
