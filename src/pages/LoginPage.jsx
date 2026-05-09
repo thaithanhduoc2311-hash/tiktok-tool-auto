@@ -11,7 +11,7 @@ export default function LoginPage({ isLogin, setIsLogin, authUrl }) {
 
       <div className="login-hero" style={{ padding: 40 }}>
         {/* Trang trắng */}        
-        <img src="/non-login.svg" alt="TikTok Tool" className="login-hero-image" />
+        <img src="/non-login.svg" alt="Tool Upload AI" className="login-hero-image" />
         <p className="login-message">Bạn chưa đăng nhập TikTok</p>
       </div>
     </div>

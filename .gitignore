@@ -12,6 +12,20 @@ dist
 dist-ssr
 *.local
 
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Runtime uploads and temporary media
+backend/uploads/
+
+# Local API/client tooling state
+.postman/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

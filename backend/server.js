@@ -20,6 +20,16 @@ const {
 
 const app = express();
 
+function getErrorResponse(error) {
+  return {
+    status: error.status || 500,
+    body: {
+      error: error.message || "Internal server error",
+      details: error.details,
+    },
+  };
+}
+
 // Configure multer for video uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -62,9 +72,21 @@ app.get("/", (req, res) => {
  * Body: { accessToken: string, video: file }
  */
 app.post("/api/upload/video", upload.single("video"), async (req, res) => {
+  let videoFile;
+
   try {
-    const { accessToken } = req.body;
-    const videoFile = req.file;
+    const {
+      accessToken,
+      title,
+      privacyLevel,
+      disableDuet,
+      disableComment,
+      disableStitch,
+      isAigc,
+      brandOrganicToggle,
+      brandContentToggle,
+    } = req.body;
+    videoFile = req.file;
 
     if (!accessToken) {
       return res.status(400).json({ error: "Missing accessToken" });
@@ -74,15 +96,26 @@ app.post("/api/upload/video", upload.single("video"), async (req, res) => {
       return res.status(400).json({ error: "No video file provided" });
     }
 
-    const result = await uploadVideo(accessToken, videoFile.path);
-
-    // Clean up uploaded file after processing
-    fs.unlinkSync(videoFile.path);
+    const result = await uploadVideo(accessToken, videoFile.path, {
+      title,
+      privacy_level: privacyLevel,
+      disable_duet: disableDuet === "true",
+      disable_comment: disableComment === "true",
+      disable_stitch: disableStitch === "true",
+      is_aigc: isAigc === "true",
+      brand_organic_toggle: brandOrganicToggle === "true",
+      brand_content_toggle: brandContentToggle === "true",
+    });
 
     res.json(result);
   } catch (error) {
-    console.error("Upload error:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("Upload error:", error.details || error.message);
+    const { status, body } = getErrorResponse(error);
+    res.status(status).json(body);
+  } finally {
+    if (videoFile?.path && fs.existsSync(videoFile.path)) {
+      fs.unlinkSync(videoFile.path);
+    }
   }
 });
 
@@ -107,8 +140,9 @@ app.post("/api/upload/url", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("Upload error:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("Upload error:", error.details || error.message);
+    const { status, body } = getErrorResponse(error);
+    res.status(status).json(body);
   }
 });
 
@@ -131,8 +165,9 @@ app.get("/api/upload/status/:publishId", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("Status check error:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("Status check error:", error.details || error.message);
+    const { status, body } = getErrorResponse(error);
+    res.status(status).json(body);
   }
 });
 

@@ -7,7 +7,7 @@ function getAuthorizationUrl(clientKey, redirectUri, state = "") {
     client_key: clientKey,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: "user.info.basic,video.upload",
+    scope: "user.info.basic,video.upload,video.publish",
     state: state,
   });
 

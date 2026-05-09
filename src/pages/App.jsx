@@ -8,6 +8,7 @@ export default function App({ isLogin, setIsLogin, authUrl, onLogout, user, setU
   const [fileInfo, setFileInfo] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
   const [postStatus, setPostStatus] = useState("");
+  const [postPopup, setPostPopup] = useState(null);
   const locationRef = useRef(null);
   const carouselRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -122,12 +123,13 @@ const minuteRef = useRef(null);
 const ITEM_HEIGHT = 36;
 
 const [showPrivacy, setShowPrivacy] = useState(false);
-const [privacy, setPrivacy] = useState("Mọi người");
+const [privacy, setPrivacy] = useState("Chỉ mình bạn");
 
   // Khai báo nội dung bài đăng
   const [showBrandDeclare, setShowBrandDeclare] = useState(false);
   const [isBrand, setIsBrand] = useState(false);
   const [isBrandContent, setIsBrandContent] = useState(false);
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
 
 const [currentDate, setCurrentDate] = useState(new Date());
 const [selectedDate, setSelectedDate] = useState(new Date());
@@ -254,6 +256,59 @@ const selectLocation = (item) => {
   setShowLocationBox(false);
 };
 
+const showPostPopup = (type, title, message) => {
+  setPostPopup({ type, title, message });
+};
+
+const readUploadResponse = async (res) => {
+  const text = await res.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: text };
+  }
+};
+
+const getUploadErrorMessage = (err) => {
+  if (err instanceof TypeError && err.message === "Failed to fetch") {
+    return "Không kết nối được backend upload. Hãy kiểm tra server backend đang chạy ở http://localhost:5000, sau đó thử lại.";
+  }
+
+  return err.message || "Có lỗi không xác định khi đăng video.";
+};
+
+const getUploadResponseErrorMessage = (data, status) => {
+  const apiError = data.details?.error;
+  const message = data.error || data.message || `Upload failed (${status})`;
+  const parts = [message];
+
+  if (apiError?.code) {
+    parts.push(`Code: ${apiError.code}`);
+  }
+
+  if (apiError?.log_id) {
+    parts.push(`Log ID: ${apiError.log_id}`);
+  }
+
+  return parts.join("\n");
+};
+
+const getPrivacyLevel = (value) => {
+  const normalized = value.toLowerCase();
+
+  if (normalized.includes("mình") || normalized.includes("mÃ¬nh") || normalized.includes("minh")) {
+    return "SELF_ONLY";
+  }
+
+  if (normalized.includes("bạn") || normalized.includes("bÃ¨") || normalized.includes("ban")) {
+    return "MUTUAL_FOLLOW_FRIENDS";
+  }
+
+  return "PUBLIC_TO_EVERYONE";
+};
+
 /*
 const fetchAuthUrl = async () => {
   try {
@@ -366,37 +421,53 @@ const handlePost = async () => {
   const accessToken = localStorage.getItem("access_token");
 
   if (!accessToken) {
-    setPostStatus("Ban can dang nhap TikTok truoc khi dang video.");
+    const message = "Bạn cần đăng nhập Tiktok trước khi đăng video.";
+    setPostStatus(message);
+    showPostPopup("error", "Chưa đăng nhập", message);
     return;
   }
 
   if (!selectedFile) {
-    setPostStatus("Vui long chon video truoc khi dang.");
+    const message = "Vui lòng chọn video trước khi đăng.";
+    setPostStatus(message);
+    showPostPopup("error", "Chưa chọn video", message);
     return;
   }
 
   try {
     setIsPosting(true);
-    setPostStatus("Dang tai video len TikTok...");
+    setPostStatus("Đang tải video lên TikTok...");
 
     const formData = new FormData();
     formData.append("accessToken", accessToken);
+    formData.append("title", caption.trim());
+    formData.append("privacyLevel", "SELF_ONLY");
+    formData.append("disableDuet", "false");
+    formData.append("disableComment", "false");
+    formData.append("disableStitch", "false");
+    formData.append("isAigc", String(isAiGenerated));
+    formData.append("brandOrganicToggle", String(showBrandDeclare && isBrand));
+    formData.append("brandContentToggle", String(showBrandDeclare && isBrandContent));
     formData.append("video", selectedFile);
 
     const res = await fetch("http://localhost:5000/api/upload/video", {
       method: "POST",
       body: formData,
     });
-    const data = await res.json();
+    const data = await readUploadResponse(res);
 
     if (!res.ok) {
-      throw new Error(data.error || "Upload failed");
+      throw new Error(getUploadResponseErrorMessage(data, res.status));
     }
 
-    setPostStatus(`Da gui video len TikTok. Publish ID: ${data.publish_id}`);
+    const message = `Đã gửi video để TikTok đăng thẳng lên profile ở chế độ riêng tư. Publish ID: ${data.publish_id}`;
+    setPostStatus(message);
+    showPostPopup("success", "Đăng video thành công", message);
   } catch (err) {
     console.error("Upload TikTok error", err);
-    setPostStatus(`Dang video that bai: ${err.message}`);
+    const message = getUploadErrorMessage(err);
+    setPostStatus(`Đăng video thất bại: ${message}`);
+    showPostPopup("error", "Đăng video thất bại", message);
   } finally {
     setIsPosting(false);
   }
@@ -1252,7 +1323,11 @@ const handlePost = async () => {
                 <span>Nội dung do AI tạo</span>
 
                 <label className="switch gray">
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={isAiGenerated}
+                    onChange={(e) => setIsAiGenerated(e.target.checked)}
+                  />
                   <span className="slider"></span>
                 </label>
               </div>
@@ -1267,12 +1342,11 @@ const handlePost = async () => {
             {/* Bottom Buttons */}
             <div className="bottom-actions">
               <button className="post" onClick={handlePost} disabled={isPosting}>
-                {isPosting ? "Dang..." : "Đăng"}
+                {isPosting ? "Đăng..." : "Đăng"}
               </button>
               <button>Lưu bản nháp</button>
               <button>Hủy</button>
             </div>
-            {postStatus && <div className="post-status">{postStatus}</div>}
           </div>
 
           {/* Right */}
@@ -1335,6 +1409,23 @@ const handlePost = async () => {
           </div>
         </div>
       </main>
+      {postPopup && (
+        <div className="popup-overlay">
+          <div className={`popup-box status-popup ${postPopup.type}`}>
+            <h2>{postPopup.title}</h2>
+            <p>{postPopup.message}</p>
+
+            <div className="popup-actions">
+              <button
+                className="btn-next"
+                onClick={() => setPostPopup(null)}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* POPUP BƯỚC 1 */}
       {showLinkPopup && (
         <div className="popup-overlay">

@@ -28,8 +28,8 @@ export default function Header({
   return (
     <div className="header">
       <div className="header-left">
-        <img src="/logo.png" alt="Logo" className="header-logo" />
-        <span className="header-title">TikTok Tool</span>
+        <img src="/logo.png" alt="Tool Upload AI logo" className="header-logo" />
+        <span className="header-title">Tool Upload AI</span>
       </div>
 
       <div className="avatar-wrapper" ref={avatarRef}>
